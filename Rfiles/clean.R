@@ -1,7 +1,6 @@
 
 # 依存関係 --------------------------------------------------------------------
 
-library(dplyr)
 library(tidyr)
 
 # データ整形 -------------------------------------------------------------------
@@ -31,6 +30,7 @@ joined_children_df <- joined_children_df %>%
   )
 
 # mother.csvを整然データにする
+# childIDが主キーになる
  # ------------------------------------
  # | motherID | childID | birth_order|
  # ------------------------------------
@@ -123,36 +123,3 @@ df_cleaned <- inner_join(df_cleaned, joined_children_df, by = 'childID')
 
 df_cleaned<- df_cleaned %>% 
   filter(`age` <=12 & `age` >= 6) 
-
-# 記述統計 --------------------------------------------------------------------
-
-#基本統計量
-df_summary <- df_cleaned %>%
-  グループ化を解除
-  ungroup()%>% 
-  select(
-    age,
-    b_year,
-    b_month,
-    survey_year,
-    piat_math,
-    piat_comp,
-    piat_recog
-  ) %>%
-  rename(
-    '年齢' = age,
-    '誕生年' = b_year,
-    '誕生月' = b_month,
-    '調査年度' = survey_year,
-    'PIATスコア(数学)' = piat_math,
-    'PIATスコア(語彙)' = piat_comp,
-    'PIATスコア(読解)' = piat_recog
-  )
-library(gtsummary)
-summary <- datasummary(All(df_summary) ~ (N + Mean + SD),
-                       data = df_summary,
-                       na.rm = TRUE,
-                       fmt = 3,
-)
-print(summary)
-
