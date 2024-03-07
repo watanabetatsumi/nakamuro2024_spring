@@ -19,18 +19,61 @@ library(fixest)
 # --------------------------
 # |int       | int         |
 
+
+
+# 単回帰-数学 ------------------------------------------------------------------
+
+file_path <- "./plot_pngs/reg_table1_math.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
 model_1_math <- fixest::feols(`piat_math` ~ birth_order ,data =  df_cleaned)
-modelsummary(model_1_math,title = "成績への出生順位の影響（数学）")
+#modelsummaryよりmsummaryの方が便利かも
+msummary(model_1_math,
+         output = file_path,
+         title = "成績への出生順位の影響（数学）"
+)
+
+# modelsummary(model_1_math,title = "成績への出生順位の影響（数学）")
 
 # etableを使えば、texに出力できる (tex = t)
 # p <- etable(model_1_math ,title = "成績への出生順位の影響（数学）") 
 
+
+# 単回帰-語彙 ------------------------------------------------------------------
+
+file_path <- "./plot_pngs/reg_table1_recog.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
 model_1_recognition <- fixest::feols(`piat_recog` ~ birth_order ,data =  df_cleaned)
-modelsummary(model_1_recognition ,title = "成績への出生順位の影響（語彙）")
+msummary(model_1_recognition,
+         output = file_path,
+         title = "成績への出生順位の影響（語彙）"
+)
+# modelsummary(model_1_recognition ,title = "成績への出生順位の影響（語彙）")
 # p <- etable(model_1_recognition ,title = "成績への出生順位の影響（語彙）") 
 
+
+# 単回帰-読解 ------------------------------------------------------------------
+
+
+file_path <- "./plot_pngs/reg_table1_comp.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
 model_1_comprehension <- fixest::feols(`piat_comp` ~ birth_order ,data=  df_cleaned)
-modelsummary(model_1_comprehension ,title = "成績への出生順位の影響（読解）")
+msummary(model_1_comprehension,
+         output = file_path,
+         title = "成績への出生順位の影響（読解）"
+)
+# modelsummary(model_1_comprehension ,title = "成績への出生順位の影響（読解）")
 # p <- etable(model_1_comprehension ,title = "成績への出生順位の影響（読解）") 
 
 
@@ -60,15 +103,56 @@ modelsummary(model_1_comprehension ,title = "成績への出生順位の影響�
 # ってことが、調査年度によってクラスタ―ロバスト標準誤差を見るべき？固定効果となにが違うの？
 
 
+# 重回帰-数学 ------------------------------------------------------------------
+
+file_path <- "./plot_pngs/reg_table2_math.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
 model_2_math <- fixest::feols(`piat_math` ~ birth_order | `age` + `sibling` + `motherID` + `ismale` , data =  df_cleaned,cluster = "survey_year")
 model_3_math <- fixest::feols(`piat_math` ~ birth_order | `age` + `sibling` + `survey_year` + `ismale` , data =  df_cleaned,cluster = "motherID")
-modelsummary(list(model_1_math,model_2_math,model_3_math),title = "成績への出生順位の影響（数学）")
+# modelsummary(list(model_1_math,model_2_math,model_3_math),title = "成績への出生順位の影響（数学）")
 # p <- etable(model_2_math ,title = "成績への出生順位の影響（数学）")
 
+msummary(
+        list(model_1_math,model_2_math,model_3_math),
+         output = file_path,
+         title = "成績への出生順位の影響（数学）"
+         )
+
+
+# 重回帰-語彙 ------------------------------------------------------------------
+
+file_path <- "./plot_pngs/reg_table2_recog.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
 
 model_2_recognition <- fixest::feols(`piat_recog` ~ birth_order | `age` + `sibling` + `motherID` + `ismale` , data =  df_cleaned,cluster = "survey_year")
-modelsummary(list(model_1_recognition,model_2_recognition) ,title = "成績への出生順位の影響（語彙）")
+# modelsummary(list(model_1_recognition,model_2_recognition) ,title = "成績への出生順位の影響（語彙）")
 
+msummary(
+  list(model_1_recognition,model_2_recognition),
+  output = file_path,
+  title = "成績への出生順位の影響（語彙）"
+)
+
+
+# 重回帰-読解 ------------------------------------------------------------------
+
+file_path <- "./plot_pngs/reg_table2_comp.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
 
 model_2_comprehension <- fixest::feols(`piat_comp` ~ birth_order | `age` + `sibling` + `motherID` + `ismale` , data =  df_cleaned,cluster = "survey_year")
-modelsummary(list(model_1_recognition,model_2_comprehension) ,title = "成績への出生順位の影響（読解）")
+# modelsummary(list(model_1_recognition,model_2_comprehension) ,title = "成績への出生順位の影響（読解）")
+msummary(
+  list(model_1_comprehension,model_2_comprehension),
+  output = file_path,
+  title = "成績への出生順位の影響（読解）"
+)

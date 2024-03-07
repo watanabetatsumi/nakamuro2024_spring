@@ -5,6 +5,10 @@ library(tidyr)
 library(dplyr)
 library(gtsummary)
 library(ggplot2)
+#.pngファイルをアウトプットするため
+webshot::install_phantomjs()
+#高画質に
+library(magick)
 
 # 基本統計量 --------------------------------------------------------------------
 
@@ -30,12 +34,19 @@ df_summary <- df_cleaned %>%
     'PIATスコア(読解)' = piat_comp
   )
 
+file_path <- "./plot_pngs/summary_table.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
 summary <- datasummary(All(df_summary) ~ (N + Mean + SD),
                        data = df_summary,
                        na.rm = TRUE,
                        fmt = 3,
+                       output = file_path,
 )
-print(summary)
+
 
 # df_summary <- datasummary(All(df_summary) ~ (N + Mean + SD),
 #                        data = df_summary,
@@ -68,7 +79,19 @@ hist <- ggplot(df_cleaned, aes(x=b_year, group=birth_order, fill =birth_order)) 
   geom_histogram(position="stack", alpha=0.7, binwidth=1)+
   labs(x="出生年", y="人数", fill="出生順位")+
   scale_fill_gradient(low = "DarkBlue", high = "white")
-plot(hist)
+
+
+file_path <- "./plot_pngs/hist.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
+#こうやってplot関数を挟むことで出力するファイルディスクリプタを変えることが出来る
+png(file_path)
+  plot(hist)
+dev.off()
+
 
 # alphaは透過率
 # postion = stackは上に重ねるオプション
@@ -114,21 +137,49 @@ math_bar <- ggplot(score_df, aes(x=age, y=math, group=birth_order,linetype=birth
   geom_line() +
   labs(x="年齢", y="点数（数学）", linetype="出生順位")
 
+file_path <- "./plot_pngs/math_bar.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
+#こうやってplot関数を挟むことで出力するファイルディスクリプタを変えることが出来る
+png(file_path)
 plot(math_bar)
+dev.off()
+
 
 #語彙
 recog_bar <- ggplot(score_df, aes(x=age, y=recognition, group=birth_order,linetype=birth_order)) +
   geom_line() +
   labs(x="年齢", y="点数（語彙）", linetype="出生順位")
 
+file_path <- "./plot_pngs/recog_bar.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
+#こうやってplot関数を挟むことで出力するファイルディスクリプタを変えることが出来る
+png(file_path)
 plot(recog_bar)
+dev.off()
 
 #読解力
 comp_bar <- ggplot(score_df, aes(x=age, y=comprehension, group=birth_order,linetype=birth_order)) +
   geom_line() +
   labs(x="年齢", y="点数（読解）", linetype="出生順位")
 
+file_path <- "./plot_pngs/comp_bar.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
+#こうやってplot関数を挟むことで出力するファイルディスクリプタを変えることが出来る
+png(file_path)
 plot(comp_bar)
+dev.off()
 
 
 # 散布図・回帰直線 ----------------------------------------------------------------
@@ -181,4 +232,13 @@ scat_plot <- ggplot(scat_df, aes(x=math_1, y=math_2)) +
   geom_smooth(method="lm",formula='y~x') +
   labs(x="第一子", y="第二子")
 
+file_path <- "./plot_pngs/scat_plot.png"
+
+if (file.exists(file_path)) {
+  file.remove(file_path)
+}
+
+#こうやってplot関数を挟むことで出力するファイルディスクリプタを変えることが出来る
+png(file_path)
 plot(scat_plot)
+dev.off()
