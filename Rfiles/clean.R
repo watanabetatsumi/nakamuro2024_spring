@@ -1,23 +1,32 @@
 
 # 依存関係 --------------------------------------------------------------------
 
+library(dplyr)
+library(purrr)
 library(tidyr)
 
 # データ整形 -------------------------------------------------------------------
 
-df_1 <- read.csv("./data/outcomes_1.csv")
-df_2 <- read.csv("./data/outcomes_2.csv")
-df_3 <- read.csv("./data/outcomes_3.csv")
-df_4 <- read.csv("./data/outcomes_4.csv")
-df_5 <- read.csv("./data/outcomes_5.csv")
+# df_1 <- read.csv("./data/outcomes_1.csv")
+# df_2 <- read.csv("./data/outcomes_2.csv")
+# df_3 <- read.csv("./data/outcomes_3.csv")
+# df_4 <- read.csv("./data/outcomes_4.csv")
+# df_5 <- read.csv("./data/outcomes_5.csv")
 df_chi <- read.csv("./data/children.csv")
 df_moth <- read.csv("./data/mothers.csv")
+# 
+# # データフレームを結合
+# all_df_list <- list(df_1,df_2,df_3, df_4, df_5)
+# df_alloutcomes <- bind_rows(all_df_list)
 
-# データフレームを結合
-all_df_list <- list(df_1,df_2,df_3, df_4, df_5)
-df_alloutcomes <- bind_rows(all_df_list)
+#フルパスでファイル名を取得。ディレクトリとワイルドカードも指定可能。
+datafiles <- list.files('./data/',full.names=T,pattern="outcome")
+#リストをmap関数でread.csv関数に割り当てる
+df_alloutcomes <- map_dfr(datafiles,read.csv)
+#df_alloutcomes <- datafiles %>% map_dfr(read.csv)も可
 
 # 内部結合(children + outcome)
+# 外部結合left_joinでもいい
 joined_children_df <- inner_join(df_chi, df_alloutcomes, by = 'CPUBID')
 
 # 年齢
@@ -42,6 +51,42 @@ df_moth <- df_moth %>%
   rename(
     'motherId' = CASEID_1979,
   )
+
+# names_prefixを指定すると、削ってくれる。→ただし、
+df_cleaned_longer <- df_moth %>% 
+  pivot_longer(cols = c("CPUBID1","CPUBID2","CPUBID3","CPUBID4","CPUBID5","CPUBID6"),names_to = "BirthOrder",names_prefix = "CPUBID",values_to = "CPUBID")
+df_cleaned_longer<- na.omit(df_cleaned_longer)
+
+# null詰めはしてくれない
+
+# widerデータ（横持ち）
+# ---------------------------------------------------------------------------------------
+# | motherID | CPUBID1    | CPUBID2   | CPUBID3    | CPUBID4   | CPUBID5    | CPUBID6   | ←name
+# ---------------------------------------------------------------------------------------
+# |1　       | a          | b         | c          | d       　| e          | f         | ←value
+# ---------------------------------------------------------------------------------------
+# |2　       | A          | B         | C          | D       　| E          | F         | ←value
+
+
+# ↓ pivot_longer()
+
+                #↓names　　　↓value
+# ------------------------------------
+# | motherID | BirthOrder | CPUBID   |
+# ------------------------------------
+# |1         | CPUBID1    | a        |
+# ------------------------------------
+# |1         | CPUBID2    | b        |
+# ------------------------------------
+# |1         | CPUBID3    | c        |
+# ------------------------------------
+# |1         | CPUBID4    | d        |
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------------
+# |2         | CPUBID5    | E        |
+# ------------------------------------
+# |2         | CPUBID6    | F        |
 
 # 地道にselectを使って整形。のち連結。
 df_order1 <- select(df_moth,
@@ -113,13 +158,14 @@ joined_children_df <- joined_children_df %>%
     survey_year = year
   )
 
+
+df_cleaned <- inner_join(df_cleaned, joined_children_df, by = 'childID')
+
 df_cleaned <- df_cleaned %>% 
-  group_by(motherID) %>% 
+  group_by(motherID,survey_year) %>% 
   mutate(
     sibling = max(birth_order)
   )
-
-df_cleaned <- inner_join(df_cleaned, joined_children_df, by = 'childID')
 
 df_cleaned<- df_cleaned %>% 
   filter(`age` <=12 & `age` >= 6) 

@@ -101,6 +101,10 @@ msummary(model_1_comprehension,
 # クラスタリングしてそれぞれ回帰させるイメージ⇒固定効果としてとるのか、クラスタ―ロバスト標準誤差としてとるのか
 #クラスタリングして、クラスター間の分散を過小評価させる。クラスター内の分散を見る、、、みたいな？
 # ってことが、調査年度によってクラスタ―ロバスト標準誤差を見るべき？固定効果となにが違うの？
+# クラスタ―ロバスト標準はクラスター間の相関を過小評価するためのもの⇔サンプルサイズの大きさ＝分散の過大評価
+# 固定効果はクラスターごとの事前の切片を取る
+# クラスターロバスト標準誤差はさらに、クラスター内の分散をあえて過大評価する方法
+
 
 
 # 重回帰-数学 ------------------------------------------------------------------
@@ -111,13 +115,14 @@ if (file.exists(file_path)) {
   file.remove(file_path)
 }
 
-model_2_math <- fixest::feols(`piat_math` ~ birth_order | `age` + `sibling` + `motherID` + `ismale` , data =  df_cleaned,cluster = "survey_year")
-model_3_math <- fixest::feols(`piat_math` ~ birth_order | `age` + `sibling` + `survey_year` + `ismale` , data =  df_cleaned,cluster = "motherID")
+# feols関数(目的変数~説明変数+コントロール変数|固定効果,data=データフレーム,cluster=クラスタ―ロバスト標準)
+
+model_2_math <- fixest::feols(piat_math ~ birth_order + age + ismale | survey_year + motherID, data = df_cleaned, cluster = c("survey_year", "motherID"))
 # modelsummary(list(model_1_math,model_2_math,model_3_math),title = "成績への出生順位の影響（数学）")
 # p <- etable(model_2_math ,title = "成績への出生順位の影響（数学）")
 
 msummary(
-        list(model_1_math,model_2_math,model_3_math),
+        list(model_1_math,model_2_math),
          output = file_path,
          title = "成績への出生順位の影響（数学）"
          )
@@ -131,7 +136,7 @@ if (file.exists(file_path)) {
   file.remove(file_path)
 }
 
-model_2_recognition <- fixest::feols(`piat_recog` ~ birth_order | `age` + `sibling` + `motherID` + `ismale` , data =  df_cleaned,cluster = "survey_year")
+model_2_recognition <- fixest::feols(`piat_recog` ~ birth_order + age + ismale | survey_year + motherID, data = df_cleaned, cluster = c("survey_year", "motherID"))
 # modelsummary(list(model_1_recognition,model_2_recognition) ,title = "成績への出生順位の影響（語彙）")
 
 msummary(
@@ -149,7 +154,7 @@ if (file.exists(file_path)) {
   file.remove(file_path)
 }
 
-model_2_comprehension <- fixest::feols(`piat_comp` ~ birth_order | `age` + `sibling` + `motherID` + `ismale` , data =  df_cleaned,cluster = "survey_year")
+model_2_comprehension <- fixest::feols(`piat_comp` ~ birth_order + age + ismale | survey_year + motherID, data = df_cleaned, cluster = c("survey_year", "motherID"))
 # modelsummary(list(model_1_recognition,model_2_comprehension) ,title = "成績への出生順位の影響（読解）")
 msummary(
   list(model_1_comprehension,model_2_comprehension),

@@ -5,6 +5,7 @@ library(tidyr)
 library(dplyr)
 library(gtsummary)
 library(ggplot2)
+library(modelsummary)
 #.pngファイルをアウトプットするため
 webshot::install_phantomjs()
 #高画質に
@@ -40,7 +41,7 @@ if (file.exists(file_path)) {
   file.remove(file_path)
 }
 
-summary <- datasummary(All(df_summary) ~ (N + Mean + SD),
+summary <- datasummary(All(df_summary) ~ ((標本数 = N) + (平均 = Mean) + (標準偏差　= SD)),
                        data = df_summary,
                        na.rm = TRUE,
                        fmt = 3,
